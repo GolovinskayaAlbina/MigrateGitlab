@@ -1,3 +1,5 @@
+{{% toc %}}
+
 # Migrate GitLab to new Host
 
 ## Install GitLab 11.11.0 version
@@ -209,9 +211,6 @@ wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages
 sudo dpkg -i gitlab-ee_12.0.6-ee.0_amd64.deb 
 ```
 
-![image](./images/GitLabVers12.0.png)
-
-
 Then update version to 12.10.9
 
 ```bash
@@ -222,7 +221,6 @@ sudo dpkg -i gitlab-ee_12.10.9-ee.0_amd64.deb
 
 For more information about PostgreSql and GitLab click the [link](https://docs.gitlab.com/omnibus/package-information/postgresql_versions.html) 
 
-![image](./images/GitLabVer12.10.png)
 
 Then update to 13.0.x version
 ```bash
@@ -231,13 +229,18 @@ wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages
 sudo dpkg -i gitlab-ee_13.0.9-ee.0_amd64.deb 
 ```
 
-Plese, skip 13.4.1 updating. It removes migrated projects.
-{: .alert .alert-warning}
+<div class="panel panel-warning">
+**Warning**
+{: .panel-heading}
+<div class="panel-body">
+
+Plese, skip 13.4.1 updating. It removes migrated projects.{
+
+</div>
+</div>
 
 
 Las step - updating to the latest 13.4.1 version
-
-
 
 ```bash
 wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages/ubuntu/bionic/gitlab-ee_13.4.1-ee.0_amd64.deb/download.deb
@@ -246,27 +249,7 @@ sudo dpkg -i gitlab-ee_13.4.1-ee.0_amd64.deb
 
 sudo gitlab-ctl status
 ```
-Output should looks like 
-
-```bash
-#OUTOUT
-run: alertmanager: (pid 230469) 12s; run: log: (pid 230383) 32s
-run: gitaly: (pid 230459) 12s; run: log: (pid 78050) 6278s
-run: gitlab-exporter: (pid 230484) 12s; run: log: (pid 230374) 35s
-run: gitlab-workhorse: (pid 230412) 14s; run: log: (pid 230348) 38s
-run: grafana: (pid 230448) 13s; run: log: (pid 230389) 31s
-run: logrotate: (pid 230488) 11s; run: log: (pid 230364) 36s
-run: nginx: (pid 230498) 11s; run: log: (pid 230361) 37s
-run: node-exporter: (pid 230508) 10s; run: log: (pid 230370) 35s
-run: postgres-exporter: (pid 230429) 13s; run: log: (pid 230386) 32s
-run: postgresql: (pid 202936) 1191s; run: log: (pid 38750) 8328s
-run: prometheus: (pid 230593) 10s; run: log: (pid 230380) 33s
-run: puma: (pid 230605) 10s; run: log: (pid 230342) 39s
-run: redis: (pid 218178) 418s; run: log: (pid 38735) 8328s
-run: redis-exporter: (pid 230611) 9s; run: log: (pid 230377) 34s
-run: sidekiq: (pid 230618) 9s; run: log: (pid 230345) 39s
-```
-![image](./images/GitLabVer13.4.png)
+Check that all services are on run state
 
 ## Remove GitLab
 
