@@ -61,9 +61,13 @@ Check help page. The version should be the same
 
 ## Migrate projects
 
+[Source](https://pikedom.com/migrate-gitlab-instance-to-new-host/)
+
 ### Creating backups
 
 #### Backup GitLab directory
+
+! It is important to get root user password
 
 Go to source GitLab server and run:
 
@@ -90,17 +94,18 @@ With the following content.
 tar -tvf etc-gitlab-1601386671.tar
 ```
 
-
 > drwxrwxr-x root/root         0 2020-09-29 13:46 etc/gitlab/
-
+>
 > -rw------- root/root     91815 2020-09-29 13:42 etc/gitlab/gitlab.rb
-
+>
 > -rw------- root/root     15370 2020-09-29 13:42 etc/gitlab/gitlab-secrets.json
-
+>
 > drwxr-xr-x root/root         0 2020-09-29 13:32 etc/gitlab/trusted-certs/
 
 
 #### Application Backup
+
+[Source](https://pikedom.com/migrate-gitlab-instance-to-new-host/)
 
 By default, backups are kept in /var/opt/gitlab/backups. Check this setting
 
@@ -108,7 +113,7 @@ By default, backups are kept in /var/opt/gitlab/backups. Check this setting
 grep backup_path /etc/gitlab/gitlab.rb
 ```
 > gitlab_rails['manage_backup_path'] = true
-
+>
 > gitlab_rails['backup_path'] = "/var/opt/gitlab/backups"
 
 
@@ -128,8 +133,9 @@ This creates a backup in the following location.
 ```bash
 ls -ltr /var/opt/gitlab/backups/
 ```
->total 1020
 
+>total 1020
+>
 >-rw------- 1 git git 1044480 сен 29 16:54 1601387650_2020_09_29_11.11.0_gitlab_backup.tar
 
 #### Prepare Zip
@@ -137,7 +143,7 @@ ls -ltr /var/opt/gitlab/backups/
 Lets zip and compress these files into a single archive for transfer. 
 	
 > /var/opt/gitlab/backups/1601387650_2020_09_29_11.11.0_gitlab_backup.tar
-
+>
 > ~/GiLabMigrate/etc-gitlab-1601386671.tar
 
 Zip and compress with the following.
@@ -149,7 +155,9 @@ tar -cvzf ~/gitlab-backup.tar.gz ~/GiLabMigrate/
 
 ## Application Backup Restore
 
-Stop processes using the database.
+[Source](https://pikedom.com/migrate-gitlab-instance-to-new-host/)
+
+Stop processes
 
 
 ```bash
@@ -190,9 +198,11 @@ And check for problems.
 gitlab-rake gitlab:check SANITIZE=true
 ```
 
-If all was successful, you should be able to log into the new site as before with whatever users you had setup. If you had 2FA enabled, you may need to restore the gitlab-secrets.json. Fro more information take a look on this [link](https://pikedom.com/migrate-gitlab-instance-to-new-host/)
+If all was successful, you should be able to log into the new site as before with whatever users you had setup. If you had 2FA enabled, you may need to restore the gitlab-secrets.json.
 
 ## Update GitLab version 
+
+[PostgreSql and GitLab versions](https://docs.gitlab.com/omnibus/package-information/postgresql_versions.html) 
 
 ```bash
 #optionally. New version will update it
@@ -200,8 +210,6 @@ sudo gitlab-ctl pg-upgrade
 
 sudo gitlab-rake gitlab:env:info
 ```
-
-![image](./images/UpgradePG.png)
 
 You can run sudo gitlab-ctl pg-upgrade command one more time if version of DB in not 10.7
 
@@ -219,31 +227,20 @@ wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages
 sudo dpkg -i gitlab-ee_12.10.9-ee.0_amd64.deb 
 ```
 
-For more information about PostgreSql and GitLab click the [link](https://docs.gitlab.com/omnibus/package-information/postgresql_versions.html) 
-
-
 Then update to 13.0.x version
+
 ```bash
 wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages/ubuntu/bionic/gitlab-ee_13.0.9-ee.0_amd64.deb/download.deb
 
 sudo dpkg -i gitlab-ee_13.0.9-ee.0_amd64.deb 
 ```
 
-<div class="panel panel-warning">
-**Warning**
-{: .panel-heading}
-<div class="panel-body">
+> :warning: **Do not update to 13.4.1**: It removes migrated projects!
 
-Plese, skip 13.4.1 updating. It removes migrated projects.{
-
-</div>
-</div>
-
-
-Las step - updating to the latest 13.4.1 version
+Last step - updating to **13.2.4** version
 
 ```bash
-wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages/ubuntu/bionic/gitlab-ee_13.4.1-ee.0_amd64.deb/download.deb
+wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ee/packages/ubuntu/bionic/gitlab-ee_13.2.4-ee.0_amd64.deb/download.deb
 
 sudo dpkg -i gitlab-ee_13.4.1-ee.0_amd64.deb 
 
@@ -251,6 +248,45 @@ sudo gitlab-ctl status
 ```
 Check that all services are on run state
 
+## Container Registry
+
+[Source](https://docs.gitlab.com/ee/administration/packages/container_registry.html#configure-container-registry-under-an-existing-gitlab-domain)
+
+[About Container Registry](https://docs.gitlab.com/ee/user/packages/container_registry/)
+
+To turn Container Registry on, uncomment and edit registry_external_url
+
+```bash
+sudo su
+gedit
+
+# Open /etc/gitlab/gitlab.rb
+# Edit  registry_external_url
+```
+
+![image](./images/TurnCROn.png)
+
+```bash
+gitlab-ctl reconfigure
+```
+
+Noy you are able to login, push and pull images:
+
+```bash
+ docker login albina-Virtual-Machine:5050
+
+ docker build -t albina-Virtual-Machine:5050/medzdrave/deploy/sa-frontend .
+
+ docker push albina-Virtual-Machine:5050/medzdrave/deploy/sa-frontend
+
+ docker pull albina-Virtual-Machine:5050/medzdrave/deploy/sa-frontend
+```
+
+![image](./images/CRGitLab.png)
+
+
 ## Remove GitLab
+
+[Source](https://askubuntu.com/questions/824696/is-it-fine-to-remove-the-opt-gitlab-directory-manually-after-removing-the-gitl)
 
 ![image](./images/RemoveGitLab.png)
