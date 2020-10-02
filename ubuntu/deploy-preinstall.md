@@ -28,7 +28,7 @@ You should see 2 files in your root ssh repo:
 
 Copy text from id_rsa.pub and past it to vagrant run file: `<path/to/your/project>/health-service/deploy/vagrant/run.sh`
 
-Copy text from id_rsa.pub and past it to **gitlab.medzdrav.ru*** Profile->Settings->Add SSH
+Copy text from id_rsa.pub and past it to **gitlab.medzdrav.ru** Profile->Settings->Add SSH
 
 You should copy id_rsa.pub and id_rsa files to vagrant ssh directory: `<path/to/your/project>/health-service/deploy/vagrant/.ssh`:
 
@@ -57,6 +57,36 @@ Be sure, that master machine has 2 cpus in your VagrantFile (`<path/to/your/proj
 "mysql-master" => { :ip => "10.10.10.80", :cpus => 1, :mem => 2048 }, 
 "mysql-slave" => { :ip => "10.10.10.90", :cpus => 1, :mem => 2048 }
 ```
+
+Go to `<path/to/your/project>/health-service/deploy/vagrant`. You should be under root user 
+
+```bash
+cd <path/to/your/project>/health-service/deploy/vagrant
+
+#Create machines
+vagrant up
+
+# Try connect to machines by ssh
+# Possible, you will need to add keys to host, just check error message after calling ssh and follow the instruction in error description
+ssh 10.10.10.70
+ssh 10.10.10.80
+ssh 10.10.10.90
+
+cd ../
+
+./run.sh
+# select 1 item
+```
+
+OUTPUT
+
+![image](./images/StepRun1.png)
+
+```bash
+./run.sh
+# select 2 item
+```
+
 
 
 
