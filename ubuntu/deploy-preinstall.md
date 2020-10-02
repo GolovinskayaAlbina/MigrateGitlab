@@ -27,7 +27,9 @@ You should see 2 files in your root ssh repo:
 > /root/.ssh/id_rsa.pub
 
 Copy text from id_rsa.pub and past it to vagrant run file: `<path/to/your/project>/health-service/deploy/vagrant/run.sh`
+
 Copy text from id_rsa.pub and past it to **gitlab.medzdrav.ru*** Profile->Settings->Add SSH
+
 You should copy id_rsa.pub and id_rsa files to vagrant ssh directory: `<path/to/your/project>/health-service/deploy/vagrant/.ssh`:
 
 ```bash
@@ -46,6 +48,14 @@ You need to replace git repository with your repository. In my case it is
 
 ```bash
 find <path/to/your/project>/health-service/deploy/ -type f -exec sed -i 's/.doctoroncall.ru/.medzdrav.ru/g' {} \;
+```
+
+Be sure, that master machine has 2 cpus in your VagrantFile (`<path/to/your/project>/health-service/deploy/vagrant/VagrantFile`) and you set mysql master and slave machines 
+
+```
+"master" => { :ip => "10.10.10.70", :cpus => 2, :mem => 2048 },
+"mysql-master" => { :ip => "10.10.10.80", :cpus => 1, :mem => 2048 }, 
+"mysql-slave" => { :ip => "10.10.10.90", :cpus => 1, :mem => 2048 }
 ```
 
 
