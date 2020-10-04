@@ -4,6 +4,10 @@
 
 ## Install GitLab 11.11.0 version
 
+[Source: how-to-secure-gitlab-with-let-s-encrypt-on-ubuntu](https://www.digitalocean.com/community/tutorials/how-to-secure-gitlab-with-let-s-encrypt-on-ubuntu-16-04)
+
+[Source: how-to-install-and-configure-gitlab-on-ubuntu-18-04-ru](https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-gitlab-on-ubuntu-18-04-ru)
+
 Current GitLab version is 11.11.0:
 
 ![image](./images/GitLabVersion.png)
@@ -12,25 +16,42 @@ We need to install the same version to server. Getlab can be installed from http
 https://docs.gitlab.com/omnibus/manual_install.html
 
 ```bash
+cd /opt
+
 wget --content-disposition https://packages.gitlab.com/gitlab/gitlab-ce/packages/ubuntu/bionic/gitlab-ce_11.11.0-ce.0_amd64.deb/download.deb
 
 # root
 sudo su
 
 # Install and  setup openssh-server
-apt-get install openssh-server
+apt update
+apt install ca-certificates curl openssh-server postfix
 systemctl enable ssh
 systemctl start ssh
 
+# can be skipped
+cd /tmp
+curl -LO https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh
+bash /tmp/script.deb.sh
+
+
 # GitLab Community Edition
 # Debian/Ubuntu
+cd /opt
 dpkg -i gitlab-ce_11.11.0-ce.0_amd64.deb
 
+
+sudo ufw status # should BE ACTIVE
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw allow OpenSSH
+
+sudo ufw status
 ```
 
 You should see this output:
 
-![image](./images/GitLabInstalled.png)
+![image](./images/UFWActive.png)
 
 Next step - setup and first run Gitlab
 
@@ -43,17 +64,98 @@ Set external_url parameter to `'http://<hostname>:<port if needed>'`
 
 Save changes and exit: Ctrl+S, Ctrl+X
 
+## Install and create certificate
+
+```bash
+sudo su
+<your pass>
+
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install certbot
+
+mkdir -p /var/www/letsencrypt
+
+nano /etc/gitlab/gitlab.rb
+```
+
+Set nginx['custom_gitlab_server_config'] parameter to `"location ^~ /.well-known { root /var/www/letsencrypt; }"`
+
+![image](./images/SetNginxWellKnown.png)
+
+
 Then we need to restart Gitlab by command:
 
 ```bash
 gitlab-ctl reconfigure
 ```
 
+### Setup DNS name
+
+Open `AZURE` and add DNS name to Virtual machine
+
+```bash
+Virtual Machines on search bar
+                            |-><Your machine>
+                                            |->Overview
+                                                        |->Properties tab
+                                                                        |->DNS name configure
+```
+
+![image](./images/ConfigureVBDNSName.png)
+
+![image](./images/DNSName.png)
 Go to your site, in my case it is  http://localhost:8084/ and set `root` password, then sing in as root user
 
+### Open 80 and 443 ports
 
-![image](./images/FirstGitLabOpen.png)
+Open `AZURE` and add ports to Virtual machine
 
+```bash
+Network security groups
+ on search bar
+                            |-><Your machine>
+                                            |-> Inbound security rules
+
+                                                        |->Add
+```
+
+Add ports like on image below, they should be Active
+
+![image](./images/AddPorts.png)
+
+
+### Create cert
+
+Go to virtual machine and run 
+
+```bash
+sudo  su
+
+gitlab-ctl reconfigure
+
+certbot certonly --webroot --webroot-path=/var/www/letsencrypt -d <your_domain> # in my case it is gitlab-med.westeurope.cloudapp.azure.com
+```
+
+You should see this output: 
+![image](./images/CreateCertResult.png)
+
+```bash
+nano /etc/gitlab/gitlab.rb
+```
+
+> external_url 'http`s`://`your_domain`'
+>
+> nginx['redirect_http_to_https'] = true
+>
+>nginx['ssl_certificate'] = "/etc/letsencrypt/live/`your_domain`/fullchain.pem"
+>
+>nginx['ssl_certificate_key'] = "/etc/letsencrypt/live/`your_domain`/privkey.pem"
+
+```bash
+sudo gitlab-ctl reconfigure
+```
+Go to http`s`://`your_domain`
 
 Check help page. The version should be the same
 
