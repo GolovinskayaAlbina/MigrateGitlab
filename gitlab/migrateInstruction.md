@@ -302,6 +302,42 @@ gitlab-rake gitlab:check SANITIZE=true
 
 If all was successful, you should be able to log into the new site as before with whatever users you had setup. If you had 2FA enabled, you may need to restore the gitlab-secrets.json.
 
+### Update URL and root password
+
+[Source](https://docs.gitlab.com/omnibus/settings/configuration.html)
+[Source](https://docs.gitlab.com/ee/administration/troubleshooting/navigating_gitlab_via_rails_console.html)
+
+If you do not know root pass, open terminal and run: [Source](https://docs.gitlab.com/ee/administration/troubleshooting/navigating_gitlab_via_rails_console.html)
+
+```bash
+gitlab-rails console -e production
+user = User.where(id: 1).first
+user.activate
+user.admin = true
+user.password = 'root_pass'
+user.password_confirmation  = 'root_pass'
+user.state
+user.save!
+```
+
+Go to your gitlab URL with login path: `https://<gitlab>/login` and login as root with new `root_pass`
+
+Before you change the external URL, you should check if you have previously defined a custom Home page URL or After sign out a path under Admin Area > Settings > General > Sign-in restrictions. If URLs have been defined, either update them or remove them completely. Both of these settings might cause unintentional redirecting after configuring a new external URL. [Source](https://docs.gitlab.com/omnibus/settings/configuration.html)
+
+Before you change Sign-in restrictions you should change runners_registration_token_encrypted parameter to nil. Open terminal and run:
+
+```bash
+gitlab-rails c
+settings = ApplicationSetting.last
+settings.update_column(:runners_registration_token_encrypted, nil)
+
+exit
+gitlab-ctl restart
+```
+Go to Admin Area > Settings > General > Sign-in restrictions and empty both settings
+
+![image](./images/EmptySingInSettings.png)
+
 ## Update GitLab version 
 
 [PostgreSql and GitLab versions](https://docs.gitlab.com/omnibus/package-information/postgresql_versions.html) 
